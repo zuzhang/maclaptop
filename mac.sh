@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'caskroom/cask/brew-cask' 'macvim --with-override-system-vim' 'autojump' \
+brew_app=( 'wget' 'caskroom/cask/brew-cask' 'macvim -- --with-override-system-vim' 'autojump' \
   'tree' 'cmake' 'maven' 'ctags' 'mysql' 'homebrew/nginx/nginx-full' )
 # Use `brew cask` series commands
 cask_app=( 'google-chrome' 'sogouinput' 'skype' 'slack' 'rescuetime' 'neteasemusic' 'dash' \
