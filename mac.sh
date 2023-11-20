@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'caskroom/cask/brew-cask' 'macvim -- --with-override-system-vim' 'autojump' \
-  'tree' 'cmake' 'maven' 'ctags' 'mysql' 'homebrew/nginx/nginx-full' )
-# Use `brew cask` series commands
-cask_app=( 'google-chrome' 'sogouinput' 'skype' 'slack' 'rescuetime' 'neteasemusic' 'dash' \
-  'rubymine7' 'sequel-pro' 'mou' )
+brew_app=( 'wget' 'macvim -- --with-override-system-vim' 'autojump' \
+  'tree' 'cmake' 'mysql@5.7' )
+# Use `brew --cask` series commands
+cask_app=( 'google-chrome' 'sogouinput' 'slack' 'neteasemusic' \
+  'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' )
 
 # Set DB localhost user and password
 db_user='root'
@@ -58,13 +58,13 @@ brew_is_upgradable() {
 }
 
 brew_cask_expand_alias() {
-  brew cask info "$1" 2>/dev/null | head -1 | awk '{gsub(/:/, ""); print $1}'
+  brew info --cask "$1" 2>/dev/null | head -1 | awk '{gsub(/:/, ""); print $1}'
 }
 
 brew_cask_is_installed() {
   local NAME
   NAME=$(brew_cask_expand_alias "$1")
-  brew cask list -1 | grep -Fqx "$NAME"
+  brew list --cask -1 | grep -Fqx "$NAME"
 }
 
 app_is_installed() {
@@ -78,7 +78,7 @@ brew_cask_install() {
     echo_installed "$1"
   else
     echo_installing "$1"
-    brew cask install "$@"
+    brew install --cask "$@"
   fi
 }
 
@@ -133,19 +133,6 @@ install_iterm2_nightly() {
   fi
 }
 
-install_fonts() {
-  local font_path="$HOME/Library/Fonts"
-  if ! find $font_path -iname '*powerline*' >/dev/null; then
-    echo_installing "Powerline Fonts"
-    cd ~/Desktop
-    git clone https://github.com/powerline/fonts.git
-    ./fonts/install.sh
-    rm -r fonts
-  else
-    echo_installed "Powerline Fonts"
-  fi
-}
-
 install_rvm() {
   if ! command -v rvm >/dev/null; then
     echo_installing 'RVM'
@@ -163,12 +150,6 @@ config_mysql() {
     "grant all privileges on *.* to '$db_user'@'%' identified by '$db_pass'"
   mysql -uroot -e \
     "grant all privileges on *.* to '$db_user'@'localhost' identified by '$db_pass'"
-}
-
-config_nginx() {
-  fancy_echo "Config nginx..."
-  sudo ln -sfv /usr/local/opt/nginx-full/*.plist ~/Library/LaunchAgents
-  launchctl load ~/Library/LaunchAgents/homebrew.mxcl.nginx-full.plist
 }
 
 config_ohmyzsh() {
@@ -191,35 +172,24 @@ config_vim() {
   mkdir -p ~/.vim/bundle/
   git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
-  echo_installing 'Vim Plugin YouCompleteMe'
-  git clone https://github.com/Valloric/YouCompleteMe.git ~/.vim/bundle/YouCompleteMe
-  cd ~/.vim/bundle/YouCompleteMe
-  git submodule update --init --recursive
-  ./install.py
-
   echo_installing 'Vim Plugins'
   vim +BundleInstall! +BundleClean +qall
 }
 
 install_homebrew
 
-# install_ohmyzsh
-# TODO add lines
+install_ohmyzsh
 install_brew_app
 install_cask_app
 install_iterm2_nightly
 
-install_fonts
-
 install_rvm
-# TODO install ruby
 
 config_ohmyzsh
 # set ssh-key
 # config_ssh
 config_mysql
 # set startup
-config_nginx
 # config_vim
 
 fancy_echo 'Script Executed Successfully.'
