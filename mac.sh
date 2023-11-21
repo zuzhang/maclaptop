@@ -176,6 +176,14 @@ config_vim() {
   vim +BundleInstall! +BundleClean +qall
 }
 
+config_global() {
+  # Disable automatic periods with a double space:
+  defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+
+  # Disable smart quotes as they’re annoying when typing code.
+  defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+}
+
 install_homebrew
 
 install_ohmyzsh
@@ -190,6 +198,8 @@ config_ohmyzsh
 # config_ssh
 config_mysql
 # set startup
-# config_vim
+config_vim
+
+config_global
 
 fancy_echo 'Script Executed Successfully.'
