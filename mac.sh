@@ -5,7 +5,7 @@ brew_app=( 'wget' 'macvim -- --with-override-system-vim' 'autojump' \
   'tree' 'cmake' 'mysql@5.7' )
 # Use `brew --cask` series commands
 cask_app=( 'google-chrome' 'sogouinput' 'slack' 'neteasemusic' \
-  'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' )
+  'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' 'alfred' )
 
 # Set DB localhost user and password
 db_user='root'
