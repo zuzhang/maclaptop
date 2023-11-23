@@ -1,10 +1,9 @@
-#!/bin/sh
+#!/bin/zsh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'macvim -- --with-override-system-vim' 'autojump' \
-  'tree' 'cmake' 'mysql@5.7' )
+brew_app=( 'wget' 'autojump' 'tree' 'cmake' 'mysql@5.7' )
 # Use `brew --cask` series commands
-cask_app=( 'google-chrome' 'sogouinput' 'slack' 'neteasemusic' \
+cask_app=( 'google-chrome' 'slack' 'neteasemusic' \
   'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' 'alfred' )
 
 # Set DB localhost user and password
@@ -50,11 +49,11 @@ brew_install_or_upgrade() {
 }
 
 brew_is_installed() {
-  brew list -1 | grep -Fqx "$1"
+  brew list --formula -1 | grep -Fx "$1" >/dev/null
 }
 
 brew_is_upgradable() {
-  ! brew outdated --quiet "$1" >/dev/null
+  ! brew outdated --formula --quiet "$1" >/dev/null
 }
 
 brew_cask_expand_alias() {
@@ -64,7 +63,7 @@ brew_cask_expand_alias() {
 brew_cask_is_installed() {
   local NAME
   NAME=$(brew_cask_expand_alias "$1")
-  brew list --cask -1 | grep -Fqx "$NAME"
+  brew list --cask -1 | grep -Fx "$NAME"
 }
 
 app_is_installed() {
@@ -102,6 +101,11 @@ install_ohmyzsh() {
   else
     echo_installed 'Oh-My-ZSH'
   fi
+
+  DIRECTORY=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+  if [ ! -d "$DIRECTORY" ]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions "$DIRECTORY"
+  fi
 }
 
 install_brew_app() {
@@ -133,18 +137,14 @@ install_iterm2_nightly() {
   fi
 }
 
-install_rvm() {
-  if ! command -v rvm >/dev/null; then
-    echo_installing 'RVM'
-    \curl -sSL https://get.rvm.io | bash -s stable
-  else
-    echo_installed 'RVM'
-  fi
-}
-
 config_mysql() {
-  fancy_echo "Config MySQL... "
-  sudo ln -sfv /usr/local/Cellar/mysql/*/*.plist ~/Library/LaunchAgents
+  homebrew_cellar='/usr/local/Cellar'
+  if [[ $(uname -m) == 'arm64' ]]; then # Mac chip
+    homebrew_cellar='/opt/homebrew/Cellar'
+  fi
+
+  fancy_echo "Config MySQL..."
+  ln -sfv $homebrew_cellar/mysql@5.7/*/*.plist ~/Library/LaunchAgents
   launchctl load -F ~/Library/LaunchAgents/*mysql*.plist
   mysql -uroot -e \
     "grant all privileges on *.* to '$db_user'@'%' identified by '$db_pass'"
@@ -153,12 +153,15 @@ config_mysql() {
 }
 
 config_ohmyzsh() {
+  fancy_echo "Config Oh-My-ZSH..."
   # replace plugins config
   local zsh_file=~/.zshrc
-  local plugins='(git, autojump, ruby)'
+  local plugins='(git autojump ruby zsh-autosuggestions)'
   sed -i '' "s/^plugins=.*/plugins=$plugins/g" "$zsh_file"
 
   source ~/.zshrc
+
+  fancy_echo "Config Oh-My-ZSH DONE"
 }
 
 config_vim() {
@@ -169,8 +172,13 @@ config_vim() {
   git checkout master
   git merge master origin/master
 
-  mkdir -p ~/.vim/bundle/
-  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+  DIRECTORY=~/.vim/bundle/Vundle.vim
+  if [[ ! -d "$DIRECTORY" ]]; then
+    git clone https://github.com/VundleVim/Vundle.vim.git "$DIRECTORY"
+  else
+    cd "$DIRECTORY"
+    git pull
+  fi
 
   echo_installing 'Vim Plugins'
   vim +BundleInstall! +BundleClean +qall
@@ -191,15 +199,13 @@ install_brew_app
 install_cask_app
 install_iterm2_nightly
 
-install_rvm
-
 config_ohmyzsh
 # set ssh-key
 # config_ssh
 config_mysql
-# set startup
+## set startup
 config_vim
-
+#
 config_global
 
 fancy_echo 'Script Executed Successfully.'
