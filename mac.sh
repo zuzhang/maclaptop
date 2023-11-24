@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'autojump' 'tree' 'cmake' 'mysql@5.7' )
+brew_app=( 'wget' 'autojump' 'exa' 'cmake' 'mysql@5.7' )
 # Use `brew --cask` series commands
 cask_app=( 'google-chrome' 'slack' 'neteasemusic' \
   'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' 'alfred' )
@@ -101,11 +101,6 @@ install_ohmyzsh() {
   else
     echo_installed 'Oh-My-ZSH'
   fi
-
-  DIRECTORY=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-  if [ ! -d "$DIRECTORY" ]; then
-    git clone https://github.com/zsh-users/zsh-autosuggestions "$DIRECTORY"
-  fi
 }
 
 install_brew_app() {
@@ -156,8 +151,20 @@ config_ohmyzsh() {
   fancy_echo "Config Oh-My-ZSH..."
   # replace plugins config
   local zsh_file=~/.zshrc
-  local plugins='(git autojump ruby zsh-autosuggestions)'
+
+  autosuggestionsDir=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+  if [ ! -d "$autosuggestionsDir" ]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions "$autosuggestionsDir"
+  fi
+  local plugins='(git autojump zsh-autosuggestions)'
   sed -i '' "s/^plugins=.*/plugins=$plugins/g" "$zsh_file"
+
+  powerlevel10kDir=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+  if [ ! -d "$powerlevel10kDir" ]; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$powerlevel10kDir"
+  fi
+  # ZSH_THEME="powerlevel10k/powerlevel10k"
+  sed -i '' "s/^ZSH_THEME=.*/ZSH_THEME=powerlevel10k\/powerlevel10k/g" "$zsh_file"
 
   source ~/.zshrc
 
