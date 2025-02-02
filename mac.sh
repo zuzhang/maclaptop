@@ -1,9 +1,9 @@
 #!/bin/zsh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'autojump' 'exa' 'cmake' 'mysql@5.7' )
+brew_app=( 'wget' 'autojump' 'cmake' 'mysql@8.0' )
 # Use `brew --cask` series commands
-cask_app=( 'google-chrome' 'slack' 'neteasemusic' \
+cask_app=( 'google-chrome' 'slack' \
   'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' 'alfred' )
 
 # Set DB localhost user and password
@@ -84,8 +84,12 @@ brew_cask_install() {
 install_homebrew() {
   if ! command -v brew >/dev/null; then
     echo_installing 'Homebrew'
-      \curl -fsSL \
-        'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
+      \/bin/bash -c "$(curl -fsSL \
+        https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # if in China
+    # export HOMEBREW_NO_INSTALL_FROM_API=1
+    # \/bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
   else
     echo_installed 'Homebrew'
   fi
@@ -139,7 +143,8 @@ config_mysql() {
   fi
 
   fancy_echo "Config MySQL..."
-  ln -sfv $homebrew_cellar/mysql@5.7/*/*.plist ~/Library/LaunchAgents
+  brew link mysql
+  ln -sfv $homebrew_cellar/mysql*/*/*.plist ~/Library/LaunchAgents
   launchctl load -F ~/Library/LaunchAgents/*mysql*.plist
   mysql -uroot -e \
     "grant all privileges on *.* to '$db_user'@'%' identified by '$db_pass'"
@@ -199,9 +204,8 @@ config_global() {
   defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 }
 
-install_homebrew
-
 install_ohmyzsh
+install_homebrew
 install_brew_app
 install_cask_app
 install_iterm2_nightly
