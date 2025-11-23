@@ -186,7 +186,7 @@ config_vim() {
 
   DIRECTORY=~/.vim/bundle/Vundle.vim
   if [[ ! -d "$DIRECTORY" ]]; then
-    git clone https://github.com/VundleVim/Vundle.vim.git "$DIRECTORY"
+    git clone https://github.com/gmarik/Vundle.vim.git "$DIRECTORY"
   else
     cd "$DIRECTORY"
     git pull
