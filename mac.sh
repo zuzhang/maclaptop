@@ -1,7 +1,8 @@
 #!/bin/zsh
 
 # Modify app list as you wish. Better test first with `brew search` or `brew info` before adding new apps.
-brew_app=( 'wget' 'autojump' 'cmake' 'mysql@8.0' )
+mysql_app='mysql@8.0'
+brew_app=( 'wget' 'autojump' 'cmake' $mysql_app )
 # Use `brew --cask` series commands
 cask_app=( 'google-chrome' 'slack' \
   'intellij-idea' 'tableplus' 'postman' 'keepingyouawake' 'font-hack-nerd-font' 'alfred' )
@@ -143,13 +144,13 @@ config_mysql() {
   fi
 
   fancy_echo "Config MySQL..."
-  brew link mysql
+  brew link $mysql_app
+  mkdir -p ~/Library/LaunchAgents
   ln -sfv $homebrew_cellar/mysql*/*/*.plist ~/Library/LaunchAgents
   launchctl load -F ~/Library/LaunchAgents/*mysql*.plist
-  mysql -uroot -e \
-    "grant all privileges on *.* to '$db_user'@'%' identified by '$db_pass'"
-  mysql -uroot -e \
-    "grant all privileges on *.* to '$db_user'@'localhost' identified by '$db_pass'"
+
+  fancy_echo "Input Old MySQL Password..."
+  mysql -u root -p -e "ALTER USER '$db_user'@'localhost' IDENTIFIED BY '$db_pass'; FLUSH PRIVILEGES;"
 }
 
 config_ohmyzsh() {
